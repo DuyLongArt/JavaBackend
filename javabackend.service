@@ -1,0 +1,15 @@
+[Unit]
+Description=Java Backend Application Service
+After=network.target
+
+[Service]
+# User chạy ứng dụng (nên dùng user thường, không nên dùng root)
+User=duylong
+WorkingDirectory=/home/duylongmind432001/app
+ExecStart=/usr/bin/java -jar /home/duylongmind432001/app/MyApp.jar
+SuccessExitStatus=143
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
