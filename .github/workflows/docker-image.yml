@@ -1,0 +1,26 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build and Tag Docker image
+      run: |
+        # Generate a timestamp
+        TIMESTAMP=$(date +%s)
+        IMAGE_NAME="duylongcontainer/javabackend"
+        
+        # Build the image with two tags: the timestamp and 'latest'
+        docker build . \
+          --file Dockerfile \
+
+          --tag ${IMAGE_NAME}:latest
