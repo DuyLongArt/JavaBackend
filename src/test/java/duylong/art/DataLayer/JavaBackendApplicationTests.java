@@ -3,7 +3,9 @@ package duylong.art.DataLayer;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+import backend.JavaBackendApplication;
+
+@SpringBootTest(classes = JavaBackendApplication.class)
 class JavaBackendApplicationTests {
 
 	@Test
