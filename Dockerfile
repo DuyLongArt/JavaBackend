@@ -1,17 +1,25 @@
-# Use a lightweight Java runtime instead of full Ubuntu
-FROM eclipse-temurin:21-jdk-alpine 
-
-LABEL authors="duylong"
-
-# Set the working directory inside the container
+# --- STAGE 1: Build the application ---
+FROM eclipse-temurin:21-jdk-alpine AS build
 WORKDIR /app
 
-# 1. Copy your compiled jar file from your computer into the container
-# Replace 'your-app.jar' with the actual name of your file
-COPY build/libs/*.war app.war
+# Copy gradle files first to leverage Docker caching
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle .
+COPY settings.gradle .
+COPY src src
 
-# 2. Expose the port your backend runs on (usually 8080)
+# Fix permissions and build the WAR file
+RUN chmod +x ./gradlew
+RUN ./gradlew bootWar -x test
+
+# --- STAGE 2: Run the application ---
+FROM eclipse-temurin:21-jdk-alpine
+WORKDIR /app
+
+# Copy only the compiled WAR from the build stage
+COPY --from=build /app/build/libs/*.war app.war
+
 EXPOSE 8686
 
-# 3. Actually start the Java application
 ENTRYPOINT ["java", "-jar", "app.war"]
