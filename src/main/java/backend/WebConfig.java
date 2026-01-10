@@ -21,9 +21,9 @@ class WebConfig {
                         .allowedOrigins(
 
                                 "http://localhost:22222",
+                                "http://app.duylong.art",
                                 "http://backend.duylong.art",
-                                "http://192.168.22.4:22222"
-                        )
+                                "http://192.168.22.4:22222")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allows specified HTTP methods
                         .allowedHeaders("*") // Allows all headers;
                         .allowCredentials(true); // Allows cookies and credentials
