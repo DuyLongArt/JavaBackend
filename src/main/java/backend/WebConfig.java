@@ -18,7 +18,11 @@ class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Applies CORS configuration to all endpoints
-                        .allowedOrigins("*") // Allows requests from any origin
+                        .allowedOrigins(
+
+                                "http://localhost:22222",
+                                "http://backend.duylong.art"
+                        )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allows specified HTTP methods
                         .allowedHeaders("*") // Allows all headers;
                         .allowCredentials(true); // Allows cookies and credentials
