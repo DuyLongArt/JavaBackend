@@ -47,20 +47,22 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
 
                 // --- FIX 4: UNCOMMENT AND ACTIVATE THE JWT FILTER ---
-                .addFilterBefore(userJWTFilter, UsernamePasswordAuthenticationFilter.class)
 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/error").permitAll()
                         // FIX 5: Use a clear base path /api/auth/* for public endpoints
-                        .requestMatchers("/backend/object/**","/backend/information/**","/backend/person/**" ,"/login", "/backend/auth/**","/person/**").permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers("/backend/object/**", "/backend/information/**", "/backend/person/**",
+                                "/login", "/backend/auth/**", "/person/**")
+                        .permitAll()
+
+                        .anyRequest().authenticated())
+                .addFilterBefore(userJWTFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(e -> e
                         // Handles unauthorized access attempts
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-                );
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
 
         return http.build();
     }

@@ -43,7 +43,7 @@ public class UserJWTFilter extends OncePerRequestFilter {
 
         // 1. Check if token is missing
         if (authHeader == null || !authHeader.startsWith("Bearer ")
-                || request.getRequestURI().contains("/backend/auth/signup")) {
+                || request.getRequestURI().contains("/auth/signup")) {
             // FIX: Pass the request down the chain instead of just returning
             filterChain.doFilter(request, response);
             return;
