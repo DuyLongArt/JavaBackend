@@ -15,10 +15,9 @@ import java.time.Instant;
 @Setter
 @Entity
 @Table(name = "informations", schema = "users", uniqueConstraints = {
-        @UniqueConstraint(name = "informations_identity_id_key", columnNames = {"identity_id"})
+        @UniqueConstraint(name = "informations_identity_id_key", columnNames = { "identity_id" })
 })
-public class InformationEntity
-{
+public class InformationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "informations_id", nullable = false)
@@ -63,20 +62,16 @@ public class InformationEntity
     @Column(name = "linkedin_url", length = Integer.MAX_VALUE)
     private String linkedinUrl;
 
-//    @NotNull
+    // @NotNull
     @ColumnDefault("CURRENT_TIMESTAMP")
-    @Column(name = "created_at",insertable = false, nullable = false)
+    @Column(name = "created_at", insertable = false, nullable = false)
     private Instant createdAt;
 
-//    @NotNull
+    // @NotNull
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updated_at", insertable = false, nullable = false)
     private Instant updatedAt;
 
-    public InformationEntity(String bio)
-    {
-        bio = bio;
-    }
     public InformationEntity() {
     }
 }

@@ -60,12 +60,13 @@ public class SignupController {
                 // 4. CREATE EMAIL (Linked to Person)
                 EmailEntity email = new EmailEntity();
                 email.setEmailAddress(credential.getEmail());
+                email.setIsPrimary(true); // Mark as primary
                 // email.setIdentity(generatedId);
                 email.setIdentity(savedPerson);
                 // email.setIdentity(savedPerson);
                 // email.setId(generatedId); // Link using the generated ID
                 // Note: Assuming EmailEntity has a setter for identityId or PersonEntity
-                emailDAO.save(email);
+                EmailEntity savedEmail = emailDAO.save(email);
 
                 // 5. CREATE ACCOUNT (Sharing the SAME ID)
                 AccountEntity account = new AccountEntity();
@@ -74,6 +75,7 @@ public class SignupController {
                 account.setUsername(credential.getUserName());
                 account.setPasswordHash(hashedPassword);
                 account.setRole(credential.getRole());
+                account.setPrimaryEmailId(savedEmail.getId()); // Link to the primary email
 
                 account.setDeviceIP(credential.getDeviceIP());
                 account.setIdentity(savedPerson);
@@ -85,7 +87,11 @@ public class SignupController {
                 // info.setId(generatedId); // MANUALLY SET ID TO MATCH PERSON
                 info.setBio(credential.getBio());
                 // info.setDeviceIP(credential.getDeviceIP());
-                info.setCountry(credential.getLocation());
+                String location = credential.getLocation();
+                if (location == null || location.isEmpty()) {
+                        location = "HaNoi";
+                }
+                info.setLocation(location);
 
                 info.setIdentity(savedPerson);
 
