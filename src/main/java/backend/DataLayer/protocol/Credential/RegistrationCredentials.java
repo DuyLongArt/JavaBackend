@@ -10,25 +10,28 @@ import java.security.SecureRandom;
 
 @Getter
 @Setter
-public class RegistrationCredentials implements Credential
-{
+public class RegistrationCredentials implements Credential {
 
     private String userName;
     private String password;
-   
+
     private UserRole role;
     private String email;
     private String firstName;
     private String lastName;
+    private String deviceIP;
 
     private String bio;
     private String location;
+
     public RegistrationCredentials() {
     }
 
     public RegistrationCredentials(String userName, String password, UserRole role, String email, String firstName,
-                                   String bio,
-                                   String lastName) {
+            String bio,
+            String location,
+            String deviceIP,
+            String lastName) {
         this.userName = userName;
         this.password = password;
         this.role = role;
@@ -36,7 +39,8 @@ public class RegistrationCredentials implements Credential
         this.firstName = firstName;
         this.lastName = lastName;
         this.bio = bio;
-        this.location= location;
+        this.deviceIP = deviceIP;
+        this.location = location;
     }
 
     public String getUserName() {
@@ -86,17 +90,24 @@ public class RegistrationCredentials implements Credential
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
+
     public void setLocation(String location) {
         this.location = location;
     }
 
-    public String getBio()
-    {
+    public void setDeviceIP(String deviceIP) {
+        this.deviceIP = deviceIP;
+    }
+
+    public String getDeviceIP() {
+        return deviceIP;
+    }
+
+    public String getBio() {
         return bio;
     }
 
-    public String getLocation()
-    {
+    public String getLocation() {
         return location;
     }
 }
