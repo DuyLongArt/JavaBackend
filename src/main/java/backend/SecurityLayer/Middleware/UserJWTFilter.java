@@ -42,7 +42,8 @@ public class UserJWTFilter extends OncePerRequestFilter {
         final String username;
 
         // 1. Check if token is missing
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")
+                || request.getRequestURI().contains("/backend/auth/signup")) {
             // FIX: Pass the request down the chain instead of just returning
             filterChain.doFilter(request, response);
             return;
@@ -52,16 +53,16 @@ public class UserJWTFilter extends OncePerRequestFilter {
         jwt = authHeader.substring(7);
 
         try {
-            System.out.println("Extracting jwt from token"+jwt);
+            System.out.println("Extracting jwt from token" + jwt);
             System.out.println(jwt.getBytes(StandardCharsets.UTF_8));
             username = jwtGeneration.extractUsername(jwt);
-//            username=jwtGeneration.e
+            // username=jwtGeneration.e
 
-            System.out.println("Extracting username from token: "+username);
+            System.out.println("Extracting username from token: " + username);
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-                System.out.println("Is active: "+userDetails.isEnabled());
+                System.out.println("Is active: " + userDetails.isEnabled());
                 if (jwtGeneration.validateToken(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
@@ -69,13 +70,15 @@ public class UserJWTFilter extends OncePerRequestFilter {
                             userDetails.getAuthorities());
 
                     // Ideally, add WebAuthenticationDetails here
-                    // authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    // authToken.setDetails(new
+                    // WebAuthenticationDetailsSource().buildDetails(request));
 
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
         } catch (Exception e) {
-            // Log error but don't crash; let Spring Security handle the 403/401 later if context is empty
+            // Log error but don't crash; let Spring Security handle the 403/401 later if
+            // context is empty
             System.err.println("JWT processing failed: " + e.getMessage());
             SecurityContextHolder.clearContext();
         }
