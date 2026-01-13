@@ -17,8 +17,7 @@ import java.time.Instant;
 @Entity
 @Table(name = "persons", schema = "users")
 @EntityListeners(AuditingEntityListener.class)
-public class PersonEntity
-{
+public class PersonEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "identity_id", nullable = false)
@@ -45,22 +44,23 @@ public class PersonEntity
     @Column(name = "profile_image_url", length = Integer.MAX_VALUE)
     private String profileImageUrl;
 
-
     @ColumnDefault("true")
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = false;
 
-//    @NotNull
+    // @NotNull
     @ColumnDefault("CURRENT_TIMESTAMP")
     @CreatedDate
     @Column(name = "created_at", insertable = false, updatable = false)
-//    @org.hibernate.annotations.Generated(event = org.hibernate.annotations.EventType.INSERT)
+    // @org.hibernate.annotations.Generated(event =
+    // org.hibernate.annotations.EventType.INSERT)
     private Instant createdAt;
 
-//    @NotNull
+    // @NotNull
     @ColumnDefault("CURRENT_TIMESTAMP")
     @LastModifiedBy
-//    @org.hibernate.annotations.Generated(event = org.hibernate.annotations.EventType.INSERT)
+    // @org.hibernate.annotations.Generated(event =
+    // org.hibernate.annotations.EventType.INSERT)
     @Column(name = "updated_at", insertable = false, nullable = false)
     private Instant updatedAt;
 
@@ -71,14 +71,16 @@ public class PersonEntity
         this.firstName = firstName;
         this.lastName = lastName;
     }
-    @Column(name = "alias", unique = true, length = 255)
+
+    @Column(name = "alias", unique = true, length = 255, insertable = false, updatable = false)
     private String alias;
 
-
-/*
- TODO [Reverse Engineering] create field to map the 'alias' column
- Available actions: Define target Java type | Uncomment as is | Remove column mapping
-    @Column(name = "alias", columnDefinition = "unknown")
-    private java.lang.Object alias;
-*/
+    /*
+     * TODO [Reverse Engineering] create field to map the 'alias' column
+     * Available actions: Define target Java type | Uncomment as is | Remove column
+     * mapping
+     * 
+     * @Column(name = "alias", columnDefinition = "unknown")
+     * private java.lang.Object alias;
+     */
 }
