@@ -72,6 +72,7 @@ public class SignupController {
                         PersonEntity person = new PersonEntity();
                         person.setFirstName(credential.getFirstName());
                         person.setLastName(credential.getLastName());
+                        person.setAlias(credential.getUserName()); // Fix: Satisfy NOT NULL constraint for 'alias'
                         person.setIsActive(true); // Ensure the person is active by default
 
                         PersonEntity savedPerson = personDAO.saveAndFlush(person); // Returns entity with ID
