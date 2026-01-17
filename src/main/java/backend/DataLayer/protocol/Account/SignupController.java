@@ -103,8 +103,14 @@ public class SignupController {
                         }
                         account.setRole(role);
                         account.setPrimaryEmailId(savedEmail.getId()); // Link to the primary email
+                        if(credential.getDeviceIP()==null)
+                        {
+//                                credential.setDeviceIP("");
+                            account.setDeviceIP("");
+                        }else{
+                            account.setDeviceIP(credential.getDeviceIP());
+                        }
 
-                        account.setDeviceIP(credential.getDeviceIP());
                         account.setIdentity(savedPerson);
 
                         accountDAO.saveAndFlush(account);
