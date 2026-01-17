@@ -41,9 +41,13 @@ public class UserJWTFilter extends OncePerRequestFilter {
         final String jwt;
         final String username;
 
+        if(request.getRequestURI().contains("signup")){
+            filterChain.doFilter(request, response);
+            return;
+        }
         // 1. Check if token is missing
         if (authHeader == null || !authHeader.startsWith("Bearer ")
-                || request.getRequestURI().contains("/auth/signup")) {
+               ) {
             // FIX: Pass the request down the chain instead of just returning
             filterChain.doFilter(request, response);
             return;
