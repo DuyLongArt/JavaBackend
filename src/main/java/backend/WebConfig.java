@@ -23,6 +23,8 @@ class WebConfig {
                                 "http://localhost:22222",
                                 "http://app.duylong.art",
                                 "https://app.duylong.art",
+                                "http://web.duylong.art",
+                                "https://web.duylong.art",
                                 "http://backend.duylong.art",
                                 "https://backend.duylong.art",
                                 "http://192.168.22.4:22222")
