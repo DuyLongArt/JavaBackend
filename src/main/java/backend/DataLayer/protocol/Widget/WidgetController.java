@@ -10,75 +10,79 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/widgets")
-public class WidgetController
-{
+@RequestMapping("/backend/widgets")
+public class WidgetController {
     @Autowired
-    private  WidgetFolderDAO widgetDAO;
+    private WidgetFolderDAO widgetDAO;
     @Autowired
-    private  PersonDAO personDAO;
+    private PersonDAO personDAO;
 
     @Autowired
-    private  WidgetShortcutDAO widgetShortcutDAO;
-    public WidgetController(WidgetFolderDAO widgetDAO)
-    {
+    private WidgetShortcutDAO widgetShortcutDAO;
+
+    public WidgetController(WidgetFolderDAO widgetDAO) {
         this.widgetDAO = widgetDAO;
 
     }
 
+    @GetMapping("/folders")
+    public ResponseEntity<Iterable<WidgetFolderEntity>> getFolders() {
+        return ResponseEntity.ok(widgetDAO.findAll());
+    }
+
+    @GetMapping("/folder/{folderId}/shortcuts")
+    public ResponseEntity<Iterable<WidgetShortcutEntity>> getShortcuts(@PathVariable Integer folderId) {
+        return ResponseEntity.ok(widgetShortcutDAO.findByFolderId(folderId));
+    }
 
     @PostMapping("/widget/folder/add")
-    public ResponseEntity<WidgetFolderEntity> addFolderWidget(  @RequestBody WidgetFolderEntity widgetFolder)
-    {
+    public ResponseEntity<WidgetFolderEntity> addFolderWidget(@RequestBody WidgetFolderEntity widgetFolder) {
         WidgetFolderDAO widgetDAO = this.widgetDAO;
-        try
-        {
+        try {
             WidgetFolderEntity savedFolder = widgetDAO.save(widgetFolder);
             return ResponseEntity.ok().body(savedFolder);
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
     }
+
     @DeleteMapping("/widgets/folder/delete/{id}")
-    public ResponseEntity<String> deleteFolderWidget(@PathVariable Integer id)
-    {
-        try{
+    public ResponseEntity<String> deleteFolderWidget(@PathVariable Integer id) {
+        try {
             widgetDAO.deleteById(id);
             return ResponseEntity.ok("Folder deleted successfully");
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
     }
+
     @PostMapping("/widget/folder/edit/{id}")
-    public ResponseEntity<String> updateFolderWidget(@PathVariable Integer id, @RequestBody WidgetFolderEntity updatedFolder)
-    {
-        try{
+    public ResponseEntity<String> updateFolderWidget(@PathVariable Integer id,
+            @RequestBody WidgetFolderEntity updatedFolder) {
+        try {
             WidgetFolderEntity existingFolder = widgetDAO.findById(id).orElse(null);
-            if(existingFolder == null){
+            if (existingFolder == null) {
                 return ResponseEntity.notFound().build();
             }
             existingFolder.setFolderName(updatedFolder.getFolderName());
             widgetDAO.save(existingFolder);
             return ResponseEntity.ok("Folder updated successfully");
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
     }
 
     @PostMapping("/widget/shortcut/add")
-    public ResponseEntity<WidgetShortcutEntity> addShortcutWidget(  @RequestBody WidgetShortcutEntity shortcut)
-    {
-//        widgetDAO.
-        try{
+    public ResponseEntity<WidgetShortcutEntity> addShortcutWidget(@RequestBody WidgetShortcutEntity shortcut) {
+        // widgetDAO.
+        try {
             WidgetShortcutEntity savedShortcut = widgetShortcutDAO.save(shortcut);
             return ResponseEntity.ok().body(savedShortcut);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
-//        return ResponseEntity.ok().build();/
+        // return ResponseEntity.ok().build();/
     }
-
 
     @PutMapping("/widgget/shortcut/update/{id}")
     public ResponseEntity<WidgetShortcutEntity> updateShortcut(
@@ -112,7 +116,5 @@ public class WidgetController
             return ResponseEntity.internalServerError().build();
         }
     }
-
-
 
 }

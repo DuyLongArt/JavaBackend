@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface WidgetShortcutDAO extends JpaRepository<WidgetShortcutEntity, Integer> {
-    
-    // Methods for shortcuts
+
+    java.util.List<WidgetShortcutEntity> findByFolderId(Integer folderId);
 }
