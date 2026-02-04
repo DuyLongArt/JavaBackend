@@ -14,41 +14,105 @@ import org.springframework.web.bind.annotation.*;
 public class WidgetController
 {
     @Autowired
-    private  WidgetDAO widgetDAO;
+    private  WidgetFolderDAO widgetDAO;
     @Autowired
     private  PersonDAO personDAO;
 
-    public WidgetController(WidgetDAO widgetDAO)
+    @Autowired
+    private  WidgetShortcutDAO widgetShortcutDAO;
+    public WidgetController(WidgetFolderDAO widgetDAO)
     {
         this.widgetDAO = widgetDAO;
 
     }
 
-    @GetMapping("/shortcut/all")
-    public ResponseEntity<ShortcutEntity> viewWidget(    @AuthenticationPrincipal UserDetails userDetails)
+
+    @PostMapping("/widget/folder/add")
+    public ResponseEntity<WidgetFolderEntity> addFolderWidget(  @RequestBody WidgetFolderEntity widgetFolder)
     {
+        WidgetFolderDAO widgetDAO = this.widgetDAO;
+        try
+        {
+            WidgetFolderEntity savedFolder = widgetDAO.save(widgetFolder);
+            return ResponseEntity.ok().body(savedFolder);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    @DeleteMapping("/widgets/folder/delete/{id}")
+    public ResponseEntity<String> deleteFolderWidget(@PathVariable Integer id)
+    {
+        try{
+            widgetDAO.deleteById(id);
+            return ResponseEntity.ok("Folder deleted successfully");
+        }catch (Exception e){
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    @PostMapping("/widget/folder/edit/{id}")
+    public ResponseEntity<String> updateFolderWidget(@PathVariable Integer id, @RequestBody WidgetFolderEntity updatedFolder)
+    {
+        try{
+            WidgetFolderEntity existingFolder = widgetDAO.findById(id).orElse(null);
+            if(existingFolder == null){
+                return ResponseEntity.notFound().build();
+            }
+            existingFolder.setFolderName(updatedFolder.getFolderName());
+            widgetDAO.save(existingFolder);
+            return ResponseEntity.ok("Folder updated successfully");
+        }catch (Exception e){
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/widget/shortcut/add")
+    public ResponseEntity<WidgetShortcutEntity> addShortcutWidget(  @RequestBody WidgetShortcutEntity shortcut)
+    {
+//        widgetDAO.
+        try{
+            WidgetShortcutEntity savedShortcut = widgetShortcutDAO.save(shortcut);
+            return ResponseEntity.ok().body(savedShortcut);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().build();
+        }
+//        return ResponseEntity.ok().build();/
+    }
 
 
-        Integer identity= personDAO.findPersonEntityByUserName(userDetails.getUsername()).getId();
+    @PutMapping("/widgget/shortcut/update/{id}")
+    public ResponseEntity<WidgetShortcutEntity> updateShortcut(
+            @PathVariable Integer id,
+            @RequestBody WidgetShortcutEntity updatedDetails) {
 
-        System.out.println("Person ID: "+identity);
+        return widgetShortcutDAO.findById(id).map(shortcut -> {
+            shortcut.setShortcutName(updatedDetails.getShortcutName());
+            shortcut.setShortcutUrl(updatedDetails.getShortcutUrl());
 
-       ShortcutEntity result= widgetDAO.getAllShortcut(identity);
-        if(result == null){
+            // Handle folder update if provided
+            if (updatedDetails.getFolder() != null) {
+                shortcut.setFolder(updatedDetails.getFolder());
+            }
+
+            WidgetShortcutEntity saved = widgetShortcutDAO.save(shortcut);
+            return ResponseEntity.ok(saved);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    // DELETE: Remove a shortcut by ID
+    @DeleteMapping("/widgget/shortcut/delete/{id}")
+    public ResponseEntity<Void> deleteShortcut(@PathVariable Integer id) {
+        try {
+            if (widgetShortcutDAO.existsById(id)) {
+                widgetShortcutDAO.deleteById(id);
+                return ResponseEntity.noContent().build();
+            }
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
-        return ResponseEntity.ok(result);
-    }
-    @PostMapping("/shortcut/add")
-    public ResponseEntity<ShortcutEntity> addWidget(  @RequestBody ShortcutEntity shortcut,
-    Authentication authentication)
-    {
 
-        String currentUsername = authentication.getName();
-        Integer identity= personDAO.findPersonEntityByUserName(currentUsername).getId();
-        shortcut.setIdentity(personDAO.findPersonEntityByUserName(currentUsername));
-        ShortcutEntity savedShortcut = widgetDAO.save(shortcut);
-        return ResponseEntity.ok(savedShortcut);
-    }
+
 
 }
