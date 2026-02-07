@@ -49,7 +49,7 @@ public class WidgetController {
             WidgetFolderEntity widgetFolderEntity = new WidgetFolderEntity();
             widgetFolderEntity.setFolderName(widgetFolder.getFolderName());
             widgetFolderEntity.setId(widgetFolder.getId());
-            Integer identityId = getAccount(userDetails).getId();
+//            Integer identityId = getAccount(userDetails).getId();
             widgetFolderEntity.setIdentity(getAccount(userDetails));
 //            widgetFolderEntity.setIdentity(identityId);
             return ResponseEntity.ok(widgetDAO.save(widgetFolderEntity));
