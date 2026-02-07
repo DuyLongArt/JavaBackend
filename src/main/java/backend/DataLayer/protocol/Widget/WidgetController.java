@@ -48,7 +48,7 @@ public class WidgetController {
         try {
             WidgetFolderEntity widgetFolderEntity = new WidgetFolderEntity();
             widgetFolderEntity.setFolderName(widgetFolder.getFolderName());
-            widgetFolderEntity.setId(widgetFolder.getId());
+//            widgetFolderEntity.setId(widgetFolder.getId());
 //            Integer identityId = getAccount(userDetails).getId();
             widgetFolderEntity.setIdentity(getAccount(userDetails));
 //            widgetFolderEntity.setIdentity(identityId);
