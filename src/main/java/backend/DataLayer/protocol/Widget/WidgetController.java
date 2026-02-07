@@ -43,11 +43,16 @@ public class WidgetController {
 
     @PostMapping("/widget/folder/add")
     public ResponseEntity<WidgetFolderEntity> addFolderWidget(
-            @RequestBody WidgetFolderEntity widgetFolder,
+            @RequestBody WidgetFolderRequest widgetFolder,
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            widgetFolder.setIdentity(getAccount(userDetails));
-            return ResponseEntity.ok(widgetDAO.save(widgetFolder));
+            WidgetFolderEntity widgetFolderEntity = new WidgetFolderEntity();
+            widgetFolderEntity.setFolderName(widgetFolder.getFolderName());
+            widgetFolderEntity.setId(widgetFolder.getId());
+            Integer identityId = getAccount(userDetails).getId();
+            widgetFolderEntity.setIdentity(getAccount(userDetails));
+//            widgetFolderEntity.setIdentity(identityId);
+            return ResponseEntity.ok(widgetDAO.save(widgetFolderEntity));
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
