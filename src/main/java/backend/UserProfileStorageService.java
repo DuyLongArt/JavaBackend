@@ -1,5 +1,6 @@
 package backend;
 
+import backend.DataLayer.protocol.ObjectData.AssetDAO;
 import backend.DataLayer.protocol.ObjectData.AssetEntity;
 import backend.DataLayer.protocol.Person.PersonDAO;
 import backend.DataLayer.protocol.Person.PersonEntity;
