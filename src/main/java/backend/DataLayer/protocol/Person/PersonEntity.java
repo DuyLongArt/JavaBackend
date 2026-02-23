@@ -44,6 +44,9 @@ public class PersonEntity {
     @Column(name = "profile_image_url", length = Integer.MAX_VALUE)
     private String profileImageUrl;
 
+    @Column(name = "cover_image_url", length = Integer.MAX_VALUE)
+    private String coverImageUrl;
+
     @ColumnDefault("true")
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = false;

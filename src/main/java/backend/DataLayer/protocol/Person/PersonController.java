@@ -1,14 +1,13 @@
 package backend.DataLayer.protocol.Person;
 
+import backend.UserProfileStorageService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -18,6 +17,9 @@ import java.util.List;
 public class PersonController {
     @Autowired
     private PersonDAO personDAO;
+
+    @Autowired
+    private UserProfileStorageService userProfileStorageService;
 
     // @org.springframework.transaction.annotation.Transactional(readOnly = true)
     @Transactional
@@ -89,6 +91,32 @@ public class PersonController {
             return ResponseEntity.internalServerError().build();
         }
 
+    }
+
+    @PostMapping("avatar/update")
+    public ResponseEntity<String> updateAvatar(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            String path = userProfileStorageService.uploadAvatar(userDetails.getUsername(), file);
+            return ResponseEntity.ok(path);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Error uploading avatar: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("cover/update")
+    public ResponseEntity<String> updateCover(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            String path = userProfileStorageService.uploadCover(userDetails.getUsername(), file);
+            return ResponseEntity.ok(path);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Error uploading cover: " + e.getMessage());
+        }
     }
 
 }

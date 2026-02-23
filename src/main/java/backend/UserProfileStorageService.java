@@ -1,7 +1,8 @@
 package backend;
 
-import backend.DataLayer.protocol.ObjectData.AssetDAO;
 import backend.DataLayer.protocol.ObjectData.AssetEntity;
+import backend.DataLayer.protocol.Person.PersonDAO;
+import backend.DataLayer.protocol.Person.PersonEntity;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,14 +24,31 @@ public class UserProfileStorageService {
     @Autowired
     private AssetDAO assetDAO;
 
-    public String uploadAvatar(Integer userId, MultipartFile file) throws Exception {
-        String fileName = "avatars/" + userId + "_" + file.getOriginalFilename();
-        return upload(fileName, file);
+    @Autowired
+    private PersonDAO personDAO;
+
+    public String uploadAvatar(String username, MultipartFile file) throws Exception {
+        String fileName = "avatars/" + username + "_" + file.getOriginalFilename();
+        String path = upload(fileName, file);
+        
+        PersonEntity person = personDAO.findPersonEntityByUserName(username);
+        if (person != null) {
+            person.setProfileImageUrl(path);
+            personDAO.save(person);
+        }
+        return path;
     }
 
-    public String uploadCover(Integer userId, MultipartFile file) throws Exception {
-        String fileName = "covers/" + userId + "_" + file.getOriginalFilename();
-        return upload(fileName, file);
+    public String uploadCover(String username, MultipartFile file) throws Exception {
+        String fileName = "covers/" + username + "_" + file.getOriginalFilename();
+        String path = upload(fileName, file);
+
+        PersonEntity person = personDAO.findPersonEntityByUserName(username);
+        if (person != null) {
+            person.setCoverImageUrl(path);
+            personDAO.save(person);
+        }
+        return path;
     }
 
     private String upload(String fileName, MultipartFile file) throws Exception {
