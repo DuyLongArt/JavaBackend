@@ -62,7 +62,7 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         // FIX 5: Use a clear base path /api/auth/* for public endpoints
                         .requestMatchers("/backend/object/**", "/backend/information/**", "/backend/person/**",
-                                "/login", "/backend/auth/**", "/person/**", "/backend/widgets/**")
+                                "/login", "/backend/auth/**", "/person/**", "/backend/widgets/**", "/backend/auth/supabase/**")
                         .permitAll()
 
                         .anyRequest().authenticated())

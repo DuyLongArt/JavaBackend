@@ -50,15 +50,28 @@ public class UserService implements UserDetailsService {
 
         // B. Create and return the UserDetails object
 
+        return createSpringUser(accountEntity);
+    }
+
+    @Transactional
+    public UserDetails loadUserByEmail(String email) throws UsernameNotFoundException {
+        AccountEntity accountEntity = accountDAO.findByEmailAddress(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        return createSpringUser(accountEntity);
+    }
+
+    private User createSpringUser(AccountEntity accountEntity) {
+        List<SimpleGrantedAuthority> authorities = Collections.singletonList(
+                new SimpleGrantedAuthority("ROLE_" + accountEntity.getRole()));
+
         return new User(
                 accountEntity.getUsername(),
-                accountEntity.getPasswordHash(), // The stored (hashed) password
-                accountEntity.getIdentity() != null && accountEntity.getIdentity().getIsActive(), // Boolean flag for
-                                                                                              // enabled status
-                true, // accountNonExpired
-                true, // credentialsNonExpired
-                !accountEntity.getIsLocked(), // accountNonLocked check in person table
-                authorities // The list of roles/authorities
+                accountEntity.getPasswordHash(),
+                accountEntity.getIdentity() != null && accountEntity.getIdentity().getIsActive(),
+                true,
+                true,
+                !accountEntity.getIsLocked(),
+                authorities
         );
     }
 }

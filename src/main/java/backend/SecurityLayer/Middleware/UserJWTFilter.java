@@ -2,7 +2,7 @@ package backend.SecurityLayer.Middleware;
 
 import backend.DataLayer.protocol.Account.AccountDAO;
 import backend.SecurityLayer.Authen.JWTGeneration;
-//import backend.SecurityLayer.Authen.JWTUtility;
+import backend.SecurityLayer.Authen.SupabaseJWTUtility;
 import backend.SecurityLayer.Authen.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,12 +21,14 @@ import java.nio.charset.StandardCharsets;
 public class UserJWTFilter extends OncePerRequestFilter {
 
     private final JWTGeneration jwtGeneration;
+    private final SupabaseJWTUtility supabaseJWTUtility;
     private final UserService userDetailsService;
     // AccountDAO appears unused in this logic, but keeping it if you need it later
     private final AccountDAO accountDAO;
 
-    public UserJWTFilter(JWTGeneration jwtGeneration, AccountDAO accountDAO, UserService userDetailsService) {
+    public UserJWTFilter(JWTGeneration jwtGeneration, SupabaseJWTUtility supabaseJWTUtility, AccountDAO accountDAO, UserService userDetailsService) {
         this.jwtGeneration = jwtGeneration;
+        this.supabaseJWTUtility = supabaseJWTUtility;
         this.accountDAO = accountDAO;
         this.userDetailsService = userDetailsService;
     }
@@ -57,32 +59,46 @@ public class UserJWTFilter extends OncePerRequestFilter {
         jwt = authHeader.substring(7);
 
         try {
-            System.out.println("Extracting jwt from token" + jwt);
-            System.out.println(jwt.getBytes(StandardCharsets.UTF_8));
-            username = jwtGeneration.extractUsername(jwt);
-            // username=jwtGeneration.e
+            System.out.println("Processing token: " + jwt);
+            UserDetails userDetails = null;
 
-            System.out.println("Extracting username from token: " + username);
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+            // 1. Try Local JWT Verification
+            try {
+                username = jwtGeneration.extractUsername(jwt);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    userDetails = this.userDetailsService.loadUserByUsername(username);
+                    if (!jwtGeneration.validateToken(jwt, userDetails)) {
+                        userDetails = null;
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Local JWT verification failed, trying Supabase...");
+            }
 
-                System.out.println("Is active: " + userDetails.isEnabled());
-                if (jwtGeneration.validateToken(jwt, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities());
-
-                    // Ideally, add WebAuthenticationDetails here
-                    // authToken.setDetails(new
-                    // WebAuthenticationDetailsSource().buildDetails(request));
-
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+            // 2. Try Supabase JWT Verification if local failed
+            if (userDetails == null && supabaseJWTUtility.validateToken(jwt)) {
+                String email = supabaseJWTUtility.extractEmail(jwt);
+                System.out.println("Supabase token valid for email: " + email);
+                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    try {
+                        userDetails = this.userDetailsService.loadUserByEmail(email);
+                    } catch (Exception e) {
+                        System.err.println("User not found for Supabase email: " + email);
+                    }
                 }
             }
+
+            // 3. Set Authentication if user found
+            if (userDetails != null) {
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("Authentication set for user: " + userDetails.getUsername());
+            }
+
         } catch (Exception e) {
-            // Log error but don't crash; let Spring Security handle the 403/401 later if
-            // context is empty
             System.err.println("JWT processing failed: " + e.getMessage());
             SecurityContextHolder.clearContext();
         }

@@ -92,5 +92,8 @@ public interface AccountDAO extends JpaRepository<AccountEntity, Integer> {
     Long countLockedAccounts();
 
     AccountEntity findAccountEntityByUsername(String username);
+    
+    @Query("SELECT a FROM AccountEntity a JOIN EmailEntity e ON a.identity.id = e.identity.id WHERE e.emailAddress = :email")
+    Optional<AccountEntity> findByEmailAddress(@Param("email") String email);
 
 }

@@ -11,23 +11,29 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-public class ObjectStorageServices
-{
-
+public class UserProfileStorageService {
 
     @Autowired
-    @Qualifier("minioMediaClient")
+    @Qualifier("minioUserClient")
     private MinioClient minioClient;
 
-    @Value("${minio.media.bucket}")
+    @Value("${minio.user.bucket}")
     private String bucketName;
 
     @Autowired
     private AssetDAO assetDAO;
 
-    public void uploadFile(MultipartFile file) throws Exception
-    {
-        String fileName = file.getOriginalFilename();
+    public String uploadAvatar(Integer userId, MultipartFile file) throws Exception {
+        String fileName = "avatars/" + userId + "_" + file.getOriginalFilename();
+        return upload(fileName, file);
+    }
+
+    public String uploadCover(Integer userId, MultipartFile file) throws Exception {
+        String fileName = "covers/" + userId + "_" + file.getOriginalFilename();
+        return upload(fileName, file);
+    }
+
+    private String upload(String fileName, MultipartFile file) throws Exception {
         minioClient.putObject(
                 PutObjectArgs.builder()
                         .bucket(bucketName)
@@ -40,11 +46,13 @@ public class ObjectStorageServices
         // Mirror metadata to local Postgres
         AssetEntity asset = new AssetEntity(
             bucketName,
-            fileName, // path is just filename for now
             fileName,
+            file.getOriginalFilename(),
             file.getContentType(),
             file.getSize()
         );
         assetDAO.save(asset);
+
+        return fileName;
     }
 }
