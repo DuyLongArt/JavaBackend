@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/backend/person/")
+@RequestMapping("/backend/person")
 
 public class PersonController {
     @Autowired
