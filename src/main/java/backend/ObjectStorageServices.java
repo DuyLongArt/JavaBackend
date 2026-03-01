@@ -27,6 +27,14 @@ public class ObjectStorageServices
 
     public void uploadFile(MultipartFile file) throws Exception
     {
+        // Check if bucket exists, create if it does not
+        boolean isBucketExists = minioClient.bucketExists(
+                io.minio.BucketExistsArgs.builder().bucket(bucketName).build());
+        if (!isBucketExists) {
+            minioClient.makeBucket(
+                    io.minio.MakeBucketArgs.builder().bucket(bucketName).build());
+        }
+
         String fileName = file.getOriginalFilename();
         minioClient.putObject(
                 PutObjectArgs.builder()

@@ -29,10 +29,13 @@ public class UserProfileStorageService {
     private PersonDAO personDAO;
 
     public String uploadAvatar(String username, MultipartFile file) throws Exception {
-        String fileName = "avatars/" + username + "_" + file.getOriginalFilename();
+        PersonEntity person = personDAO.findPersonEntityByUserName(username);
+        String alias = (person != null && person.getAlias() != null && !person.getAlias().isBlank()) 
+            ? person.getAlias() : username;
+            
+        String fileName = alias + "/avatars/" + file.getOriginalFilename();
         String path = upload(fileName, file);
         
-        PersonEntity person = personDAO.findPersonEntityByUserName(username);
         if (person != null) {
             person.setProfileImageUrl(path);
             personDAO.save(person);
@@ -41,10 +44,13 @@ public class UserProfileStorageService {
     }
 
     public String uploadCover(String username, MultipartFile file) throws Exception {
-        String fileName = "covers/" + username + "_" + file.getOriginalFilename();
+        PersonEntity person = personDAO.findPersonEntityByUserName(username);
+        String alias = (person != null && person.getAlias() != null && !person.getAlias().isBlank()) 
+            ? person.getAlias() : username;
+            
+        String fileName = alias + "/covers/" + file.getOriginalFilename();
         String path = upload(fileName, file);
 
-        PersonEntity person = personDAO.findPersonEntityByUserName(username);
         if (person != null) {
             person.setCoverImageUrl(path);
             personDAO.save(person);
@@ -53,6 +59,14 @@ public class UserProfileStorageService {
     }
 
     private String upload(String fileName, MultipartFile file) throws Exception {
+        // Check if bucket exists, create if it does not
+        boolean isBucketExists = minioClient.bucketExists(
+                io.minio.BucketExistsArgs.builder().bucket(bucketName).build());
+        if (!isBucketExists) {
+            minioClient.makeBucket(
+                    io.minio.MakeBucketArgs.builder().bucket(bucketName).build());
+        }
+
         minioClient.putObject(
                 PutObjectArgs.builder()
                         .bucket(bucketName)
