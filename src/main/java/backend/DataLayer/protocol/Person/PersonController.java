@@ -25,24 +25,17 @@ public class PersonController {
     @Transactional
     @GetMapping("information")
     public ResponseEntity<PersonEntity> getInformation(@AuthenticationPrincipal UserDetails userDetails) {
-
+        if (userDetails == null) return ResponseEntity.status(401).build();
         String currentUsername = userDetails.getUsername();
-
-        // Now find the person based on the username/email instead of ID 1
-        // PersonEntity person = personDAO.(currentUsername).orElse(null);
         PersonEntity person = personDAO.findPersonEntityByUserName(currentUsername);
-        // return ResponseEntity.ok(person);
         return ResponseEntity.ok(person);
     }
 
     @GetMapping("archive")
     public ResponseEntity<ArchiveEntity> getArchiveInformation(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(401).build();
         String currentUsername = userDetails.getUsername();
-
-        // Now find the person based on the username/email instead of ID 1
-        // PersonEntity person = personDAO.(currentUsername).orElse(null);
         ArchiveEntity personArchive = personDAO.findArchiveByUserName(currentUsername);
-        // return ResponseEntity.ok(person);
         if (personArchive == null) {
             return ResponseEntity.notFound().build();
         }
@@ -55,22 +48,18 @@ public class PersonController {
             String address,
             String phoneNumber,
             String bio) {
-
+        if (userDetails == null) return ResponseEntity.status(401).build();
         return null;
     }
 
     @GetMapping("skills")
     public ResponseEntity<List<SkillEntity>> getSkillInformation(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(401).build();
         String currentUsername = userDetails.getUsername();
-
         List<SkillEntity> skills = personDAO.findSkillEntityByUsername(currentUsername);
-
-        // If the list is empty, you can return 404 or an empty 200 list.
-        // Usually, an empty list with 200 OK is preferred for collections.
         if (skills.isEmpty()) {
-            return ResponseEntity.noContent().build(); // or .notFound().build()
+            return ResponseEntity.noContent().build();
         }
-
         return ResponseEntity.ok(skills);
     }
 
@@ -80,23 +69,25 @@ public class PersonController {
             String category,
             String name,
             String description
-
     ) {
+        if (userDetails == null) return ResponseEntity.status(401).build();
         String currentUsername = userDetails.getUsername();
-        Integer currentIdentityId = personDAO.findPersonEntityByUserName(currentUsername).getId();
+        PersonEntity person = personDAO.findPersonEntityByUserName(currentUsername);
+        if (person == null) return ResponseEntity.status(404).build();
+        
         try {
-            personDAO.addSkillEntityByUsername(category, name, description, currentIdentityId);
+            personDAO.addSkillEntityByUsername(category, name, description, person.getId());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
-
     }
 
     @PostMapping("avatar/update")
     public ResponseEntity<String> updateAvatar(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam("file") MultipartFile file) {
+        if (userDetails == null) return ResponseEntity.status(401).body("Unauthorized: No user found in context");
         try {
             String path = userProfileStorageService.uploadAvatar(userDetails.getUsername(), file);
             return ResponseEntity.ok(path);
@@ -110,6 +101,7 @@ public class PersonController {
     public ResponseEntity<String> updateCover(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam("file") MultipartFile file) {
+        if (userDetails == null) return ResponseEntity.status(401).body("Unauthorized: No user found in context");
         try {
             String path = userProfileStorageService.uploadCover(userDetails.getUsername(), file);
             return ResponseEntity.ok(path);
