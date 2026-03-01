@@ -54,6 +54,9 @@ public class UserRegistrationService {
         person.setFirstName(credential.getFirstName());
         person.setLastName(credential.getLastName() != null ? credential.getLastName() : "");
         person.setIsActive(true);
+        if (credential.getAlias() != null && !credential.getAlias().isBlank()) {
+            person.setAlias(credential.getAlias());
+        }
         PersonEntity savedPerson = personDAO.saveAndFlush(person);
 
         Integer generatedId = savedPerson.getId();

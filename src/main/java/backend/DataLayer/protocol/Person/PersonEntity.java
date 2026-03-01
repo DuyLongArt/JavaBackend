@@ -75,15 +75,6 @@ public class PersonEntity {
         this.lastName = lastName;
     }
 
-    @Column(name = "alias", unique = true, length = 255, insertable = false, updatable = false)
+    @Column(name = "alias", unique = true, length = 255)
     private String alias;
-
-    /*
-     * TODO [Reverse Engineering] create field to map the 'alias' column
-     * Available actions: Define target Java type | Uncomment as is | Remove column
-     * mapping
-     * 
-     * @Column(name = "alias", columnDefinition = "unknown")
-     * private java.lang.Object alias;
-     */
 }

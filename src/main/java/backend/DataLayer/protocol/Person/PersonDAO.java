@@ -17,6 +17,8 @@ public interface PersonDAO extends JpaRepository<PersonEntity, Integer>
     @Query("SELECT p FROM PersonEntity p JOIN AccountEntity a ON p.id=a.identity.id WHERE a.username= :username")
     PersonEntity findPersonEntityByUserName(String username);
 
+    PersonEntity findByAlias(String alias);
+
 
     @Query("SELECT a FROM ArchiveEntity a JOIN AccountEntity ac ON a.identity.id=ac.identity.id WHERE ac.username= :username")
     ArchiveEntity findArchiveByUserName(String username);

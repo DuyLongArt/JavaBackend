@@ -23,6 +23,7 @@ public class RegistrationCredentials implements Credential {
 
     private String bio;
     private String location;
+    private String alias;
 
     public RegistrationCredentials() {
     }
@@ -109,5 +110,13 @@ public class RegistrationCredentials implements Credential {
 
     public String getLocation() {
         return location;
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
 }

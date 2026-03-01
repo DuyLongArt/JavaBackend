@@ -53,6 +53,11 @@ public class SupabaseAuthController {
         try {
             RegistrationCredentials credentials = new RegistrationCredentials();
             credentials.setEmail(email);
+            
+            // Extract the Supabase UUID from the JWT
+            String supabaseUserId = supabaseJWTUtility.extractUserId(token);
+            credentials.setAlias(supabaseUserId);
+
             // Use email as username prefix if full name not available
             String username = email.split("@")[0] + "_" + java.util.UUID.randomUUID().toString().substring(0, 5);
             credentials.setUserName(username);
