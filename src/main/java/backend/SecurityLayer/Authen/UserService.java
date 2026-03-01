@@ -54,9 +54,9 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public UserDetails loadUserByEmail(String email) throws UsernameNotFoundException {
-        AccountEntity accountEntity = accountDAO.findByEmailAddress(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    public UserDetails loadUserByAlias(String alias) throws UsernameNotFoundException {
+        AccountEntity accountEntity = accountDAO.findByAlias(alias)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with alias: " + alias));
         return createSpringUser(accountEntity);
     }
 

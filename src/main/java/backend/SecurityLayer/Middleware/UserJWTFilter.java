@@ -43,14 +43,20 @@ public class UserJWTFilter extends OncePerRequestFilter {
         final String jwt;
         final String username;
 
-        if(request.getRequestURI().contains("signup")){
+        if (request.getRequestURI().contains("signup")) {
             filterChain.doFilter(request, response);
             return;
         }
+
+        System.out.println("--- Entering UserJWTFilter for URI: " + request.getRequestURI() + " ---");
+
         // 1. Check if token is missing
-        if (authHeader == null || !authHeader.startsWith("Bearer ")
-               ) {
-            // FIX: Pass the request down the chain instead of just returning
+        if (authHeader == null) {
+            System.out.println("No Authorization header found. Skipping JWT validation.");
+            filterChain.doFilter(request, response);
+            return;
+        } else if (!authHeader.startsWith("Bearer ")) {
+            System.out.println("Authorization header found but does not start with Bearer. Header: " + authHeader);
             filterChain.doFilter(request, response);
             return;
         }
@@ -77,13 +83,13 @@ public class UserJWTFilter extends OncePerRequestFilter {
 
             // 2. Try Supabase JWT Verification if local failed
             if (userDetails == null && supabaseJWTUtility.validateToken(jwt)) {
-                String email = supabaseJWTUtility.extractEmail(jwt);
-                System.out.println("Supabase token valid for email: " + email);
-                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                String userId = supabaseJWTUtility.extractUserId(jwt);
+                System.out.println("Supabase token valid for UID: " + userId);
+                if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     try {
-                        userDetails = this.userDetailsService.loadUserByEmail(email);
+                        userDetails = this.userDetailsService.loadUserByAlias(userId);
                     } catch (Exception e) {
-                        System.err.println("User not found for Supabase email: " + email);
+                        System.err.println("User not found for Supabase UID (alias): " + userId);
                     }
                 }
             }
