@@ -38,7 +38,7 @@ public class UserRegistrationService {
         }
         if (emailDAO.existsByEmailAddress(credential.getEmail())) {
             // Check if we can just link the alias to the existing person
-            java.util.Optional<EmailEntity> existingEmailOpt = emailDAO.findByEmailAddress(credential.getEmail());
+            java.util.Optional<EmailEntity> existingEmailOpt = emailDAO.findFirstByEmailAddress(credential.getEmail());
             if (existingEmailOpt.isPresent()) {
                 PersonEntity existingPerson = existingEmailOpt.get().getIdentity();
                 if (existingPerson != null) {
