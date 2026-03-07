@@ -55,4 +55,36 @@ public class ObjectStorageServices
         );
         assetDAO.save(asset);
     }
+
+    public String uploadFile(String alias, MultipartFile file) throws Exception {
+        // Check if bucket exists, create if it does not
+        boolean isBucketExists = minioClient.bucketExists(
+                io.minio.BucketExistsArgs.builder().bucket(bucketName).build());
+        if (!isBucketExists) {
+            minioClient.makeBucket(
+                    io.minio.MakeBucketArgs.builder().bucket(bucketName).build());
+        }
+
+        String fileName = alias + "/" + file.getOriginalFilename();
+        minioClient.putObject(
+                PutObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(fileName)
+                        .stream(file.getInputStream(), file.getSize(), -1)
+                        .contentType(file.getContentType())
+                        .build()
+        );
+
+        // Mirror metadata to local Postgres
+        AssetEntity asset = new AssetEntity(
+            bucketName,
+            fileName,
+            file.getOriginalFilename(),
+            file.getContentType(),
+            file.getSize()
+        );
+        assetDAO.save(asset);
+
+        return fileName;
+    }
 }

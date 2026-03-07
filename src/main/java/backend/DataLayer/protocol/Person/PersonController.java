@@ -21,6 +21,9 @@ public class PersonController {
     @Autowired
     private UserProfileStorageService userProfileStorageService;
 
+    @Autowired
+    private backend.ObjectStorageServices objectStorageServices;
+
     // @org.springframework.transaction.annotation.Transactional(readOnly = true)
     @Transactional
     @GetMapping("information")
@@ -119,6 +122,26 @@ public class PersonController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body("Error uploading cover: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("app/upload")
+    public ResponseEntity<String> uploadAppMedia(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam("file") MultipartFile file) {
+        if (userDetails == null) return ResponseEntity.status(401).body("Unauthorized: No user found in context");
+        try {
+            PersonEntity person = personDAO.findPersonEntityByUserName(userDetails.getUsername());
+            if (person == null) return ResponseEntity.status(404).body("Person not found for user: " + userDetails.getUsername());
+            
+            String alias = (person.getAlias() != null && !person.getAlias().isBlank()) 
+                ? person.getAlias() : userDetails.getUsername();
+                
+            String path = objectStorageServices.uploadFile(alias, file);
+            return ResponseEntity.ok(path);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Error uploading media: " + e.getMessage());
         }
     }
 
