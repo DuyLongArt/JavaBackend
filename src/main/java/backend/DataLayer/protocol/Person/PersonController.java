@@ -31,6 +31,17 @@ public class PersonController {
         return ResponseEntity.ok(person);
     }
 
+    @Transactional
+    @GetMapping("app_sync")
+    public ResponseEntity<PersonEntity> appSync(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(401).build();
+        String currentUsername = userDetails.getUsername();
+        PersonEntity person = personDAO.findPersonEntityByUserName(currentUsername);
+        System.out.println("App sync triggered for user: " + currentUsername);
+        return ResponseEntity.ok(person);
+    }
+
+
     @GetMapping("archive")
     public ResponseEntity<ArchiveEntity> getArchiveInformation(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) return ResponseEntity.status(401).build();
