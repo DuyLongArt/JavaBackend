@@ -37,7 +37,23 @@ public class UserRegistrationService {
             throw new Exception("Username already exists");
         }
         if (emailDAO.existsByEmailAddress(credential.getEmail())) {
-            throw new Exception("Email already exists");
+            // Check if we can just link the alias to the existing person
+            java.util.Optional<EmailEntity> existingEmailOpt = emailDAO.findByEmailAddress(credential.getEmail());
+            if (existingEmailOpt.isPresent()) {
+                PersonEntity existingPerson = existingEmailOpt.get().getIdentity();
+                if (existingPerson != null) {
+                    if (existingPerson.getAlias() == null || existingPerson.getAlias().isBlank()) {
+                        System.out.println("Linking existing email " + credential.getEmail() + " to new alias " + credential.getAlias());
+                        existingPerson.setAlias(credential.getAlias());
+                        personDAO.saveAndFlush(existingPerson);
+                        return existingPerson.getId();
+                    } else if (existingPerson.getAlias().equals(credential.getAlias())) {
+                        System.out.println("Email " + credential.getEmail() + " already linked to alias " + credential.getAlias());
+                        return existingPerson.getId();
+                    }
+                }
+            }
+            throw new Exception("Email already exists and is linked to a different identity");
         }
 
         // 2. Hashing (if password provided, otherwise use a random uuid or something)

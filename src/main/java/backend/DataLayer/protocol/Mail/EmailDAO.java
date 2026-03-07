@@ -16,4 +16,6 @@ import java.util.Optional;
 public interface EmailDAO extends JpaRepository<EmailEntity, Integer> {
 
     boolean existsByEmailAddress(String emailAddress);
+    
+    java.util.Optional<EmailEntity> findByEmailAddress(String emailAddress);
 }
