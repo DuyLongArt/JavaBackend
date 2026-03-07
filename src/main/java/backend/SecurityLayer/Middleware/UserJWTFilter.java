@@ -91,48 +91,59 @@ public class UserJWTFilter extends OncePerRequestFilter {
             }
 
             // 2. Try Supabase JWT Verification if local failed
-            if (userDetails == null && supabaseJWTUtility.validateToken(jwt)) {
-                String userId = supabaseJWTUtility.extractUserId(jwt);
-                System.out.println("Supabase token valid for UID: " + userId);
-                if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    try {
-                        userDetails = this.userDetailsService.loadUserByAlias(userId);
-                    } catch (Exception e) {
-                        System.out.println("User not found for Supabase UID (alias): " + userId + ". Attempting auto-registration...");
+            if (userDetails == null) {
+                System.out.println("Local user lookup failed or token invalid, check Supabase...");
+                if (supabaseJWTUtility.validateToken(jwt)) {
+                    String userId = supabaseJWTUtility.extractUserId(jwt);
+                    System.out.println("Supabase token is VALID. UID: " + userId);
+                    
+                    if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                         try {
-                            String email = supabaseJWTUtility.extractEmail(jwt);
-                            String fullName = supabaseJWTUtility.extractFullName(jwt);
-                            
-                            RegistrationCredentials credentials = new RegistrationCredentials();
-                            credentials.setEmail(email);
-                            credentials.setAlias(userId);
-                            
-                            // Generate a unique username based on email
-                            String generatedUsername = email.split("@")[0] + "_" + java.util.UUID.randomUUID().toString().substring(0, 5);
-                            credentials.setUserName(generatedUsername);
-                            
-                            if (fullName != null && !fullName.isBlank()) {
-                                String[] parts = fullName.split(" ", 2);
-                                credentials.setFirstName(parts[0]);
-                                if (parts.length > 1) {
-                                    credentials.setLastName(parts[1]);
-                                }
-                            } else {
-                                credentials.setFirstName(generatedUsername);
-                                credentials.setLastName("");
-                            }
-                            
-                            // Trigger registration
-                            registrationService.registerUser(credentials);
-                            System.out.println("User auto-registered successfully: " + generatedUsername);
-
-                            
-                            // Load the newly created user
                             userDetails = this.userDetailsService.loadUserByAlias(userId);
-                        } catch (Exception regEx) {
-                            System.err.println("Auto-registration failed for UID " + userId + ": " + regEx.getMessage());
+                            System.out.println("Found existing local user for alias: " + userId);
+                        } catch (Exception e) {
+                            System.out.println("No local user found for alias: " + userId + ". Starting auto-registration...");
+                            try {
+                                String email = supabaseJWTUtility.extractEmail(jwt);
+                                String fullName = supabaseJWTUtility.extractFullName(jwt);
+                                System.out.println("Extracted from JWT - Email: " + email + ", Name: " + fullName);
+                                
+                                RegistrationCredentials credentials = new RegistrationCredentials();
+                                credentials.setEmail(email);
+                                credentials.setAlias(userId);
+                                
+                                // Generate a unique username based on email
+                                String generatedUsername = email.split("@")[0] + "_" + java.util.UUID.randomUUID().toString().substring(0, 5);
+                                credentials.setUserName(generatedUsername);
+                                System.out.println("Generated Username: " + generatedUsername);
+                                
+                                if (fullName != null && !fullName.isBlank()) {
+                                    String[] parts = fullName.split(" ", 2);
+                                    credentials.setFirstName(parts[0]);
+                                    if (parts.length > 1) {
+                                        credentials.setLastName(parts[1]);
+                                    }
+                                } else {
+                                    credentials.setFirstName(generatedUsername);
+                                    credentials.setLastName("");
+                                }
+                                
+                                // Trigger registration
+                                System.out.println("Calling registrationService.registerUser...");
+                                registrationService.registerUser(credentials);
+                                System.out.println("User auto-registered successfully: " + generatedUsername);
+                                
+                                // Load the newly created user
+                                userDetails = this.userDetailsService.loadUserByAlias(userId);
+                                System.out.println("Loaded newly registered user Details.");
+                            } catch (Exception regEx) {
+                                System.err.println("CRITICAL: Auto-registration failed for UID " + userId);
+                                regEx.printStackTrace();
+                            }
                         }
                     }
+                } else {
+                    System.out.println("Supabase token validation FAILED for token: " + (jwt.length() > 20 ? jwt.substring(0, 20) + "..." : jwt));
                 }
             }
 
@@ -143,13 +154,17 @@ public class UserJWTFilter extends OncePerRequestFilter {
                         null,
                         userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-                System.out.println("Authentication set for user: " + userDetails.getUsername());
+                System.out.println("Successfully authenticated user: " + userDetails.getUsername());
+            } else {
+                System.out.println("Authentication FAILED: No userDetails found.");
             }
 
         } catch (Exception e) {
-            System.err.println("JWT processing failed: " + e.getMessage());
+            System.err.println("JWT processing block threw unexpected exception: " + e.getMessage());
+            e.printStackTrace();
             SecurityContextHolder.clearContext();
         }
+
 
         // 3. Continue the chain
         filterChain.doFilter(request, response);
