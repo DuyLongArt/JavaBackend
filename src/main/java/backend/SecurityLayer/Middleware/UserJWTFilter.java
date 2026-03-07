@@ -1,6 +1,8 @@
 package backend.SecurityLayer.Middleware;
 
 import backend.DataLayer.protocol.Account.AccountDAO;
+import backend.DataLayer.protocol.Account.UserRegistrationService;
+import backend.DataLayer.protocol.Credential.RegistrationCredentials;
 import backend.SecurityLayer.Authen.JWTGeneration;
 import backend.SecurityLayer.Authen.SupabaseJWTUtility;
 import backend.SecurityLayer.Authen.UserService;
@@ -23,14 +25,20 @@ public class UserJWTFilter extends OncePerRequestFilter {
     private final JWTGeneration jwtGeneration;
     private final SupabaseJWTUtility supabaseJWTUtility;
     private final UserService userDetailsService;
+    private final UserRegistrationService registrationService;
     // AccountDAO appears unused in this logic, but keeping it if you need it later
     private final AccountDAO accountDAO;
 
-    public UserJWTFilter(JWTGeneration jwtGeneration, SupabaseJWTUtility supabaseJWTUtility, AccountDAO accountDAO, UserService userDetailsService) {
+    public UserJWTFilter(JWTGeneration jwtGeneration, 
+                        SupabaseJWTUtility supabaseJWTUtility, 
+                        AccountDAO accountDAO, 
+                        UserService userDetailsService,
+                        UserRegistrationService registrationService) {
         this.jwtGeneration = jwtGeneration;
         this.supabaseJWTUtility = supabaseJWTUtility;
         this.accountDAO = accountDAO;
         this.userDetailsService = userDetailsService;
+        this.registrationService = registrationService;
     }
 
     @Override
@@ -89,7 +97,40 @@ public class UserJWTFilter extends OncePerRequestFilter {
                     try {
                         userDetails = this.userDetailsService.loadUserByAlias(userId);
                     } catch (Exception e) {
-                        System.err.println("User not found for Supabase UID (alias): " + userId);
+                        System.out.println("User not found for Supabase UID (alias): " + userId + ". Attempting auto-registration...");
+                        try {
+                            String email = supabaseJWTUtility.extractEmail(jwt);
+                            String fullName = supabaseJWTUtility.extractFullName(jwt);
+                            
+                            RegistrationCredentials credentials = new RegistrationCredentials();
+                            credentials.setEmail(email);
+                            credentials.setAlias(userId);
+                            
+                            // Generate a unique username based on email
+                            String generatedUsername = email.split("@")[0] + "_" + java.util.UUID.randomUUID().toString().substring(0, 5);
+                            credentials.setUserName(generatedUsername);
+                            
+                            if (fullName != null && !fullName.isBlank()) {
+                                String[] parts = fullName.split(" ", 2);
+                                credentials.setFirstName(parts[0]);
+                                if (parts.length > 1) {
+                                    credentials.setLastName(parts[1]);
+                                }
+                            } else {
+                                credentials.setFirstName(generatedUsername);
+                                credentials.setLastName("");
+                            }
+                            
+                            // Trigger registration
+                            registrationService.registerUser(credentials);
+                            System.out.println("User auto-registered successfully: " + generatedUsername);
+
+                            
+                            // Load the newly created user
+                            userDetails = this.userDetailsService.loadUserByAlias(userId);
+                        } catch (Exception regEx) {
+                            System.err.println("Auto-registration failed for UID " + userId + ": " + regEx.getMessage());
+                        }
                     }
                 }
             }
