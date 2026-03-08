@@ -2,6 +2,7 @@ package backend.DataLayer.protocol.System;
 
 import backend.DataLayer.protocol.Health.DailyMetricsDAO;
 import backend.DataLayer.protocol.Health.DailyMetricsEntity;
+import backend.DataLayer.protocol.Person.PersonEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
