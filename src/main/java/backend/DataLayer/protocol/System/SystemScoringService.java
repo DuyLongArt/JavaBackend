@@ -1,6 +1,7 @@
 package backend.DataLayer.protocol.System;
 
-import backend.DataLayer.protocol.Person.PersonEntity;
+import backend.DataLayer.protocol.Health.DailyMetricsDAO;
+import backend.DataLayer.protocol.Health.DailyMetricsEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +15,10 @@ public class SystemScoringService {
     private ScoreDAO scoreDAO;
 
     @Autowired
-    private HealthMetricsDAO healthMetricsDAO;
+    private DailyMetricsDAO dailyMetricsDAO;
+
+    @Autowired
+    private QuestDAO questDAO;
 
     /**
      * Initializes a new score record for a person.
@@ -32,7 +36,7 @@ public class SystemScoringService {
      */
     @Transactional
     public void updateScoresFromHealthMetrics(Integer personId, LocalDate date) {
-        healthMetricsDAO.findByPersonIdAndDate(personId, date).ifPresent(metrics -> {
+        dailyMetricsDAO.findByIdentityIdAndDate(personId, date).ifPresent(metrics -> {
             ScoreEntity score = scoreDAO.findById(personId).orElseGet(() -> {
                 ScoreEntity newScore = new ScoreEntity();
                 newScore.setId(personId);
@@ -43,7 +47,7 @@ public class SystemScoringService {
             double healthPoints = (metrics.getSteps() / 500.0) + (metrics.getExerciseMinutes() / 20.0);
             double careerPoints = (metrics.getFocusMinutes() / 10.0);
             
-            // Assume 10 points for meeting calorie goal (this is simplified)
+            // Handle calories
             if (metrics.getCaloriesConsumed() > 0 && metrics.getCaloriesConsumed() < 2000) {
                 healthPoints += 10.0;
             }
@@ -58,7 +62,7 @@ public class SystemScoringService {
         });
     }
 
-    private void updateQuestsProgress(Integer personId, HealthMetricsEntity metrics) {
+    private void updateQuestsProgress(Integer personId, DailyMetricsEntity metrics) {
         List<QuestEntity> activeQuests = questDAO.findByPersonIdAndIsCompleted(personId, false);
         for (QuestEntity quest : activeQuests) {
             boolean changed = false;

@@ -7,6 +7,8 @@ import backend.DataLayer.protocol.Mail.EmailEntity;
 import backend.DataLayer.protocol.Person.PersonDAO;
 import backend.DataLayer.protocol.Person.PersonEntity;
 import backend.DataLayer.protocol.Credential.RegistrationCredentials;
+import backend.MinIOService;
+import backend.DataLayer.protocol.System.SystemScoringService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
