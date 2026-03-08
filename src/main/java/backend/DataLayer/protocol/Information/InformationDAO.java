@@ -20,6 +20,9 @@ public interface InformationDAO extends JpaRepository<InformationEntity, Integer
     InformationEntity findInformationByUserName(String username);
 
 
+    @Query("SELECT i FROM InformationEntity i JOIN PersonEntity p ON i.identity.id=p.id WHERE p.alias = :alias")
+    InformationEntity findInformationByAlias(@Param("alias") String alias);
+
     @Query("UPDATE InformationEntity i SET i.university = :university, i.location = :location WHERE i.identity.id = (SELECT a.identity.id FROM AccountEntity a WHERE a.username = :username)")
     void updateInformation(@Param("university") String university, @Param("location") String location, @Param("username") String username);
 }

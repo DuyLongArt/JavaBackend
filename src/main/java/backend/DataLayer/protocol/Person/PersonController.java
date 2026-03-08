@@ -24,13 +24,20 @@ public class PersonController {
     @Autowired
     private backend.ObjectStorageServices objectStorageServices;
 
-    // @org.springframework.transaction.annotation.Transactional(readOnly = true)
     @Transactional
     @GetMapping("information")
     public ResponseEntity<PersonEntity> getInformation(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) return ResponseEntity.status(401).build();
         String currentUsername = userDetails.getUsername();
         PersonEntity person = personDAO.findPersonEntityByUserName(currentUsername);
+        return ResponseEntity.ok(person);
+    }
+
+    @Transactional
+    @GetMapping("information/{alias}")
+    public ResponseEntity<PersonEntity> getInformationByAlias(@PathVariable String alias) {
+        PersonEntity person = personDAO.findByAlias(alias);
+        if (person == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(person);
     }
 
