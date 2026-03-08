@@ -65,7 +65,7 @@ public class ObjectStorageServices
                     io.minio.MakeBucketArgs.builder().bucket(bucketName).build());
         }
 
-        String fileName = alias + "/" + file.getOriginalFilename();
+        String fileName = "media/" + alias + "/" + file.getOriginalFilename();
         minioClient.putObject(
                 PutObjectArgs.builder()
                         .bucket(bucketName)
