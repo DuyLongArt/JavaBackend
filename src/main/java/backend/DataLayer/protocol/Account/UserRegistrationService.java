@@ -18,6 +18,8 @@ public class UserRegistrationService {
 
     private final AccountDAO accountDAO;
     private final InformationDAO informationDAO;
+    private final EmailDAO emailDAO;
+    private final PersonDAO personDAO;
     private final PasswordEncoder passwordEncoder;
     private final MinIOService minIOService;
     private final SystemScoringService scoringService;
