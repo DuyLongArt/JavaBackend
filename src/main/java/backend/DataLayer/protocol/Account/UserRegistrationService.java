@@ -16,18 +16,22 @@ public class UserRegistrationService {
 
     private final AccountDAO accountDAO;
     private final InformationDAO informationDAO;
-    private final EmailDAO emailDAO;
-    private final PersonDAO personDAO;
     private final PasswordEncoder passwordEncoder;
+    private final MinIOService minIOService;
+    private final SystemScoringService scoringService;
 
     public UserRegistrationService(AccountDAO accountDAO, InformationDAO informationDAO, 
                                    EmailDAO emailDAO, PersonDAO personDAO, 
-                                   PasswordEncoder passwordEncoder) {
+                                   PasswordEncoder passwordEncoder,
+                                   MinIOService minIOService,
+                                   SystemScoringService scoringService) {
         this.accountDAO = accountDAO;
         this.informationDAO = informationDAO;
         this.emailDAO = emailDAO;
         this.personDAO = personDAO;
         this.passwordEncoder = passwordEncoder;
+        this.minIOService = minIOService;
+        this.scoringService = scoringService;
     }
 
     @Transactional
@@ -106,6 +110,17 @@ public class UserRegistrationService {
         info.setLocation(location);
         info.setIdentity(savedPerson);
         informationDAO.saveAndFlush(info);
+
+        // 7. INITIALIZE STORAGE
+        try {
+            minIOService.initializeUserStorage(credential.getAlias() != null ? credential.getAlias() : credential.getUserName());
+        } catch (Exception e) {
+            System.err.println("Failed to initialize MinIO storage for user: " + e.getMessage());
+            // We don't fail the whole registration if MinIO is down, but we log it.
+        }
+
+        // 8. INITIALIZE SCORE
+        scoringService.initializeScore(savedPerson);
 
         return generatedId;
     }

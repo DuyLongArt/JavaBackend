@@ -33,7 +33,7 @@ public class UserProfileStorageService {
         String alias = (person != null && person.getAlias() != null && !person.getAlias().isBlank()) 
             ? person.getAlias() : username;
             
-        String fileName = "profiles/" + alias + "/avatars/" + file.getOriginalFilename();
+        String fileName = alias + "/admin.png";
         String path = upload(fileName, file);
         
         if (person != null) {
@@ -48,7 +48,7 @@ public class UserProfileStorageService {
         String alias = (person != null && person.getAlias() != null && !person.getAlias().isBlank()) 
             ? person.getAlias() : username;
             
-        String fileName = "profiles/" + alias + "/covers/" + file.getOriginalFilename();
+        String fileName = alias + "/cover.png";
         String path = upload(fileName, file);
 
         if (person != null) {
