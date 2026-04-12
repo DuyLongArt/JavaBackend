@@ -8,8 +8,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
-
 @RestController
 @RequestMapping("/api/v1/support")
 public class SupportController {
@@ -28,8 +26,10 @@ public class SupportController {
         if (userDetails != null) {
             String alias = userDetails.getUsername();
             if (alias != null) {
-                Optional<PersonEntity> person = personDAO.findByAlias(alias);
-                person.ifPresent(feedback::setIdentity);
+                PersonEntity person = personDAO.findByAlias(alias);
+                if (person != null) {
+                    feedback.setIdentity(person);
+                }
             }
         }
 
